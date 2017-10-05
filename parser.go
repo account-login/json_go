@@ -29,13 +29,13 @@ func Consume(input []rune, cur int, tok string) (next int, err error) {
 	next = SkipSpace(input, cur)
 	tokrune := []rune(tok)
 	if len(input)-next < len(tokrune) {
-		err = &ParseError{next, fmt.Sprintf("expect \"%s\"", tok), nil}
+		err = &ParseError{next, fmt.Sprintf("expect \"%s\"", tok)}
 		return
 	}
 
 	for i, ch := range tokrune {
 		if input[next+i] != ch {
-			err = &ParseError{next + i, fmt.Sprintf("expect \"%s\"", tok), nil}
+			err = &ParseError{next + i, fmt.Sprintf("expect \"%s\"", tok)}
 			return
 		}
 	}
@@ -46,7 +46,6 @@ func Consume(input []rune, cur int, tok string) (next int, err error) {
 type ParseError struct {
 	pos int
 	msg string
-	err error
 }
 
 func (err *ParseError) Error() string {
@@ -69,7 +68,7 @@ func ParseRunes(input []rune) (value JsonValue, err error) {
 	if err == nil {
 		next = SkipSpace(input, next)
 		if next != len(input) {
-			err = &ParseError{next, "not terminated", nil}
+			err = &ParseError{next, "not terminated"}
 		}
 	}
 	return
@@ -78,7 +77,7 @@ func ParseRunes(input []rune) (value JsonValue, err error) {
 func ParseAny(input []rune, cur int) (value JsonValue, next int, err error) {
 	next = SkipSpace(input, cur)
 	if next >= len(input) {
-		err = &ParseError{next, "expect something, got EOS", nil}
+		err = &ParseError{next, "expect something, got EOS"}
 		return
 	}
 
@@ -94,10 +93,7 @@ func ParseAny(input []rune, cur int) (value JsonValue, next int, err error) {
 	case 't', 'f', 'n':
 		value, next, err = ParseBoolNull(input, next)
 	default:
-		err = &ParseError{
-			next,
-			fmt.Sprintf("bad char: '%c' (%#x)", input[next], input[next]),
-			nil}
+		err = &ParseError{next, fmt.Sprintf("bad char: '%c' (%#x)", input[next], input[next])}
 	}
 
 	return
@@ -117,14 +113,14 @@ func Hex2Num(input []rune, cur int) (value rune, err error) {
 	case 'A' <= ch && ch <= 'F':
 		value = ch - 'A' + 10
 	default:
-		err = &ParseError{cur, fmt.Sprintf("expect hex, got '%c' (%#x)", ch, ch), nil}
+		err = &ParseError{cur, fmt.Sprintf("expect hex, got '%c' (%#x)", ch, ch)}
 	}
 	return
 }
 
 func ScanHex(input []rune, cur int) (value rune, err error) {
 	if cur+4 > len(input) {
-		err = &ParseError{cur, "expect 4 hex digit", nil}
+		err = &ParseError{cur, "expect 4 hex digit"}
 		return
 	}
 
@@ -184,19 +180,19 @@ LOOP:
 				val = append(val, ch)
 				next += 3
 			default:
-				err = &ParseError{next, fmt.Sprintf("bad escape char: '%c' (%#x)", ch, ch), nil}
+				err = &ParseError{next, fmt.Sprintf("bad escape char: '%c' (%#x)", ch, ch)}
 				return
 			}
 		case IsNoEscape(ch):
 			val = append(val, ch)
 		default:
-			err = &ParseError{next, fmt.Sprintf("unescaped char: '%c' (%#x)", ch, ch), nil}
+			err = &ParseError{next, fmt.Sprintf("unescaped char: '%c' (%#x)", ch, ch)}
 			return
 		}
 	}
 
 	if next >= len(input) || input[next] != '"' {
-		err = &ParseError{next, "string not terminated", nil}
+		err = &ParseError{next, "string not terminated"}
 		return
 	}
 
@@ -212,7 +208,7 @@ func IsDigit(ch rune) bool {
 
 func ScanInt(input []rune, cur int) (value int64, next int, err error) {
 	if !(cur < len(input) && IsDigit(input[cur])) {
-		err = &ParseError{cur, "expect digits", nil}
+		err = &ParseError{cur, "expect digits"}
 		return
 	}
 
@@ -233,7 +229,7 @@ func ParseNum(input []rune, cur int) (value JsonValue, next int, err error) {
 
 	// unreachable
 	if next >= len(input) {
-		err = &ParseError{next, "expects digits, got EOS", nil}
+		err = &ParseError{next, "expects digits, got EOS"}
 		return
 	}
 
@@ -257,7 +253,7 @@ func ParseNum(input []rune, cur int) (value JsonValue, next int, err error) {
 		next++
 
 		if !(next < len(input) && IsDigit(input[next])) {
-			err = &ParseError{next, "expect digits", nil}
+			err = &ParseError{next, "expect digits"}
 			return
 		}
 
@@ -326,7 +322,7 @@ func ParseBoolNull(input []rune, cur int) (value JsonValue, next int, err error)
 		}
 	}
 
-	err = &ParseError{next, "expect true|false|null", suberr}
+	err = &ParseError{next, "expect true|false|null"}
 	return
 }
 
@@ -402,7 +398,7 @@ func ParseArrayLike(input []rune, cur int, itemParser ParseFunc, bracket [2]stri
 		}
 		next, suberr = Consume(input, next, bracket[1])
 		if suberr != nil {
-			err = &ParseError{next, fmt.Sprintf("expect '%s' or ','", bracket[1]), suberr}
+			err = &ParseError{next, fmt.Sprintf("expect '%s' or ','", bracket[1])}
 			return
 		} else {
 			break
