@@ -101,7 +101,7 @@ func TestParseString(t *testing.T) {
 
 	good(`""`, "")
 	bad(`"`)
-	good(`"\"\\/\b\f\n\r\t"`, "\"\\/\b\f\n\r\t")
+	good(`"\"\\\/\b\f\n\r\t"`, "\"\\/\b\f\n\r\t")
 	bad(`"\"`)
 	bad(`"\`)
 	good(`"\u1234"`, "\u1234")
