@@ -22,12 +22,28 @@ func Bad(t *testing.T, input string) {
 	t.Log(input, "\t", err)
 }
 
+func TestGeneral(t *testing.T) {
+	good := func(input string, expect JsonValue) { Good(t, input, expect) }
+	bad := func(input string) { Bad(t, input) }
+
+	bad("")
+
+	const N = 10
+	arr := JsonArray{}
+	nested := "[]"
+	for i := 0; i < N; i++ {
+		arr = append(JsonArray{}, arr)
+		nested = "[" + nested + "]"
+	}
+	good(nested, arr)
+	bad(nested[:len(nested) - 1])
+	bad(nested + "]")
+}
+
 func TestParseNum(t *testing.T) {
 	goodi := func(input string, expect int64) { Good(t, input, expect) }
 	goodf := func(input string, expect float64) { Good(t, input, expect) }
 	bad := func(input string) { Bad(t, input) }
-
-	bad("")
 
 	goodi("123", 123)
 	goodi("0", 0)
