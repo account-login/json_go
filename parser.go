@@ -29,13 +29,13 @@ func Consume(input []rune, cur int, tok string) (next int, err error) {
 	next = SkipSpace(input, cur)
 	tokrune := []rune(tok)
 	if len(input)-next < len(tokrune) {
-		err = &ParseError{next, fmt.Sprintf("expect \"%s\"", tok)}
+		err = &ParseError{next, fmt.Sprintf("expect %q", tok)}
 		return
 	}
 
 	for i, ch := range tokrune {
 		if input[next+i] != ch {
-			err = &ParseError{next + i, fmt.Sprintf("expect \"%s\"", tok)}
+			err = &ParseError{next + i, fmt.Sprintf("expect %q", tok)}
 			return
 		}
 	}

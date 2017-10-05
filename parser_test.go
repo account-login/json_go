@@ -19,7 +19,7 @@ func Good(t *testing.T, input string, expect JsonValue) {
 func Bad(t *testing.T, input string) {
 	_, err := Parse(input)
 	assert.Error(t, err)
-	t.Log(input, err)
+	t.Log(input, "\t", err)
 }
 
 func TestParseNum(t *testing.T) {
