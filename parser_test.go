@@ -1,8 +1,9 @@
 package json_go
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Good(t *testing.T, input string, expect JsonValue) {
@@ -36,7 +37,7 @@ func TestGeneral(t *testing.T) {
 		nested = "[" + nested + "]"
 	}
 	good(nested, arr)
-	bad(nested[:len(nested) - 1])
+	bad(nested[:len(nested)-1])
 	bad(nested + "]")
 }
 
