@@ -139,6 +139,7 @@ func TestParseMap(t *testing.T) {
 	good("{}", JsonMap{})
 	bad("{")
 	good(`{"a": 123}`, JsonMap{"a": int64(123)})
+	good(`{"a" :123}`, JsonMap{"a": int64(123)})
 	good(`{"b": 23, "c": "d"}`, JsonMap{"b": int64(23), "c": "d"})
 	bad(`{"b": 23, "c": "d",}`)
 	bad(`{"b": ,}`)

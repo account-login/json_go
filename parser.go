@@ -138,6 +138,43 @@ func ScanHex(input []rune, cur int) (value rune, err error) {
 	return
 }
 
+func ParseEscape(input []rune, cur int) (value rune, next int, err error) {
+	next = cur
+	if cur >= len(input) {
+		err = &ParseError{next, "string not terminated, expect escape"}
+		return
+	}
+
+	ch := input[next]
+	switch ch {
+	case '"', '\\', '/':
+		value = ch
+	case 'b':
+		value = '\b'
+	case 'f':
+		value = '\f'
+	case 'n':
+		value = '\n'
+	case 'r':
+		value = '\r'
+	case 't':
+		value = '\t'
+	case 'u':
+		next++
+		value, err = ScanHex(input, next)
+		if err != nil {
+			return
+		}
+		next += 3
+	default:
+		err = &ParseError{next, fmt.Sprintf("bad escape char: '%c' (%#x)", ch, ch)}
+		return
+	}
+	next++
+
+	return
+}
+
 func ParseString(input []rune, cur int) (value string, next int, err error) {
 	next, err = Consume(input, cur, "\"")
 	if err != nil {
@@ -145,60 +182,30 @@ func ParseString(input []rune, cur int) (value string, next int, err error) {
 	}
 
 	val := []rune{}
-LOOP:
-	for ; next < len(input); next++ {
+	for next < len(input) {
 		ch := input[next]
 		switch {
-		case ch == '"':
-			break LOOP
+		case ch == '"': // terminated
+			value = string(val)
+			next++
+			return
 		case ch == '\\':
 			next++
-			if next >= len(input) {
-				break LOOP // fail
-			}
-
-			ch = input[next]
-			switch ch {
-			case '"', '\\', '/':
-				val = append(val, ch)
-			case 'b':
-				val = append(val, '\b')
-			case 'f':
-				val = append(val, '\f')
-			case 'n':
-				val = append(val, '\n')
-			case 'r':
-				val = append(val, '\r')
-			case 't':
-				val = append(val, '\t')
-			case 'u':
-				next++
-				ch, err = ScanHex(input, next)
-				if err != nil {
-					return
-				}
-				val = append(val, ch)
-				next += 3
-			default:
-				err = &ParseError{next, fmt.Sprintf("bad escape char: '%c' (%#x)", ch, ch)}
+			ch, next, err = ParseEscape(input, next)
+			if err != nil {
 				return
 			}
+			val = append(val, ch)
 		case IsNoEscape(ch):
 			val = append(val, ch)
+			next++
 		default:
 			err = &ParseError{next, fmt.Sprintf("unescaped char: '%c' (%#x)", ch, ch)}
 			return
 		}
 	}
 
-	if next >= len(input) || input[next] != '"' {
-		err = &ParseError{next, "string not terminated"}
-		return
-	}
-
-	value = string(val)
-	next++
-
+	err = &ParseError{next, "string not terminated"}
 	return
 }
 
